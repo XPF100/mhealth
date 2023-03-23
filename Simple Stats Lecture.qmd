@@ -1,0 +1,134 @@
+---
+title: "Simple Stats"
+author: "J.A. Edwards"
+format: html
+editor: visual
+---
+
+```{r}
+pacman::p_load(
+  mlbench,
+  tidyverse,
+  rio,
+  sjPlot
+)
+options(scipen = 999)
+```
+
+## Simple stats notes
+
+### T-test
+
+One sample t-test
+
+```{r}
+set.seed(0)
+ship_vol <- c(rnorm(75, mean = 37000, sd = 2500))
+t.test(ship_vol, mu = 39000)
+```
+
+Two sample t-test (numeric)
+
+```{r}
+set.seed(0)
+Spenders_Cleve <- rnorm(60, mean = 350, sd = 77)
+Spenders_NY <- rnorm(60, mean = 400, sd = 80)
+t.test(Spenders_Cleve, Spenders_NY, var.equal = TRUE)
+```
+
+Two sample t-test (binary)
+
+```{r}
+Amount_Spent <- c(Spenders_Cleve, Spenders_NY)
+city_name <- c(rep("Cleveland", 60), rep("New York", 60))
+t.test(Amount_Spent ~ city_name, var.equal = TRUE)
+```
+
+Paired t-test
+
+```{r}
+set.seed(2820)
+pre_Treatment <- c(rnorm(2000, mean = 150, sd = 10))
+post_Treatment <- c(rnorm(2000, mean = 144, sd = 9))
+t.test(pre_Treatment, post_Treatment, paired = TRUE)
+```
+
+### Chi-Square
+
+Aggregated Data
+
+```{r}
+data_frame <- read.csv("https://goo.gl/j6lRXD")  #Reading CSV
+table(data_frame$treatment, data_frame$improvement)
+chisq.test(data_frame$treatment, data_frame$improvement, correct=FALSE)
+tab_xtab(data_frame$treatment, data_frame$improvement)
+```
+
+Non-aggregate Data
+
+```{r}
+data("mtcars")
+table(mtcars$carb, mtcars$cyl)
+chisq.test(mtcars$carb, mtcars$cyl)
+tab_xtab(mtcars$carb, mtcars$cyl)
+```
+
+### ANOVA
+
+One-way ANOVA
+
+```{r}
+
+attach(InsectSprays)
+AOV_Output <- aov(count ~ spray, data=InsectSprays)
+summary(AOV_Output)
+```
+
+ANOVA Tukey Correction
+
+```{r}
+TukeyHSD(AOV_Output)
+```
+
+### Correlation
+
+```{r}
+murder <- import("Data/murder.sas7bdat")
+cor(murder)
+cor.test(murder$homrate, murder$lowinc)
+tab_corr(murder)
+```
+
+### Simple Linear Regression
+
+```{r}
+slr <- lm(homrate~lowinc, murder)
+summary(slr)
+tab_model(slr) 
+```
+
+### Multiple Linear Regression
+
+```{r}
+mlr <- lm(homrate~lowinc + unemp, murder)
+summary(mlr)
+tab_model(mlr)
+```
+
+### Generalized Linear Models (Logistic, Poisson, Median)
+
+```{r}
+data(BreastCancer, package = "mlbench")
+b_canc <- BreastCancer[complete.cases(BreastCancer),]
+logi <- glm(Class ~ Cell.shape, family="binomial", data = b_canc)
+summary(logi)
+
+```
+
+### Presenting Multiple Models
+
+```{r}
+tab_model(slr, mlr)
+```
+
+
